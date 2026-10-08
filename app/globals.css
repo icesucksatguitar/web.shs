@@ -21,7 +21,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-space-grotesk);
-  --font-mono: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 * {
@@ -31,7 +31,6 @@
 html {
   min-height: 100%;
   background: var(--background);
-  scroll-behavior: smooth;
 }
 
 body {
@@ -70,7 +69,9 @@ button {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(17, 17, 17, 0.08) 0%, transparent 70%);
   filter: blur(24px);
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 600ms ease;
   will-change: transform;
 }
 
@@ -212,8 +213,9 @@ button {
 /* ── Navigation ── */
 
 .site-nav {
+  --nav-gap: 28px;
   position: fixed;
-  bottom: 28px;
+  top: 0;
   left: 50%;
   z-index: 60;
   display: flex;
@@ -228,9 +230,16 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   box-shadow: 0 8px 32px rgba(17, 17, 17, 0.12), 0 0 0 1px rgba(17, 17, 17, 0.04);
-  transform: translateX(-50%);
+  transform: translate(-50%, calc(100vh - 100% - var(--nav-gap)));
+  transform: translate(-50%, calc(100svh - 100% - var(--nav-gap)));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 400ms ease;
+}
+
+.site-nav--top {
+  transform: translate(-50%, 16px);
+  box-shadow: 0 6px 24px rgba(17, 17, 17, 0.1), 0 0 0 1px rgba(17, 17, 17, 0.04);
 }
 
 .site-nav a {
@@ -274,6 +283,7 @@ button {
   min-height: 100vh;
   padding: clamp(48px, 8vh, 80px) 24px clamp(120px, 16vh, 160px);
   place-items: start center;
+  align-content: start;
 }
 
 .image-frame {
@@ -302,26 +312,11 @@ button {
 .hero-placeholder {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
-  background:
-    linear-gradient(160deg, rgba(17, 17, 17, 0.05), rgba(17, 17, 17, 0.02)),
-    repeating-linear-gradient(-45deg,
-      transparent,
-      transparent 12px,
-      rgba(17, 17, 17, 0.03) 12px,
-      rgba(17, 17, 17, 0.03) 24px);
+  background: linear-gradient(180deg, #fbfbfb 0%, #f1f1f1 55%, #e6e6e6 100%);
 }
 
-.hero-placeholder span {
-  padding: 12px 28px;
-  border: 1px dashed rgba(17, 17, 17, 0.24);
-  border-radius: 12px;
-  color: rgba(17, 17, 17, 0.36);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.hero-placeholder .ascii {
+  color: rgba(17, 17, 17, 0.74);
 }
 
 .image-grade {
@@ -330,6 +325,7 @@ button {
   z-index: 2;
   pointer-events: none;
   background:
+    radial-gradient(ellipse 48% 30% at 50% 26%, rgba(250, 250, 250, 0.75), transparent 100%),
     radial-gradient(circle at 50% 48%, transparent 30%, rgba(255, 255, 255, 0.22) 100%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(17, 17, 17, 0.04));
 }
@@ -339,9 +335,10 @@ button {
   inset: 0;
   z-index: 3;
   display: grid;
-  align-content: center;
+  align-content: start;
   justify-items: center;
   margin: 0;
+  padding-top: 7%;
   color: rgba(17, 17, 17, 0.92);
   text-align: center;
   text-shadow: 0 4px 24px rgba(17, 17, 17, 0.12);
@@ -358,19 +355,6 @@ button {
 
 .hero-title strong {
   font-weight: 500;
-}
-
-.coming-soon {
-  position: absolute;
-  bottom: clamp(100px, 14vh, 140px);
-  left: max(24px, calc((100vw - min(76vw, 1240px)) / 2));
-  z-index: 8;
-  margin: 0;
-  color: rgba(17, 17, 17, 0.58);
-  font-size: clamp(1rem, 2.1vw, 1.6rem);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 /* ── About section ── */
@@ -426,28 +410,14 @@ button {
 }
 
 .about-image-placeholder {
+  position: relative;
   width: 100%;
   height: 100%;
-  display: grid;
-  place-items: center;
-  background:
-    linear-gradient(145deg, rgba(17, 17, 17, 0.05), rgba(17, 17, 17, 0.02)),
-    repeating-linear-gradient(45deg,
-      transparent,
-      transparent 10px,
-      rgba(17, 17, 17, 0.03) 10px,
-      rgba(17, 17, 17, 0.03) 20px);
+  background: linear-gradient(180deg, #fbfbfb 0%, #ededed 100%);
 }
 
-.about-image-placeholder span {
-  padding: 10px 22px;
-  border: 1px dashed rgba(17, 17, 17, 0.24);
-  border-radius: 10px;
-  color: rgba(17, 17, 17, 0.34);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.about-image-placeholder .ascii {
+  color: rgba(17, 17, 17, 0.8);
 }
 
 .about-content {
@@ -620,47 +590,36 @@ button {
     border-color 350ms ease;
 }
 
-.update-card:hover {
+.update-card:hover,
+.update-card:focus-visible {
   transform: translateY(-8px) scale(1.03);
   box-shadow: 0 20px 48px rgba(17, 17, 17, 0.16);
   border-color: rgba(17, 17, 17, 0.16);
 }
 
 .update-card-placeholder {
+  position: relative;
+  display: block;
   aspect-ratio: 16 / 10;
   margin-bottom: 16px;
+  overflow: hidden;
   border-radius: 12px;
-  background:
-    linear-gradient(135deg, rgba(17, 17, 17, 0.05), rgba(17, 17, 17, 0.02)),
-    repeating-linear-gradient(-45deg,
-      transparent,
-      transparent 8px,
-      rgba(17, 17, 17, 0.03) 8px,
-      rgba(17, 17, 17, 0.03) 16px);
-  display: grid;
-  place-items: center;
-  transition: background 350ms ease;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, #fbfbfb 0%, #eeeeee 100%);
 }
 
-.update-card:hover .update-card-placeholder {
-  background:
-    linear-gradient(135deg, rgba(17, 17, 17, 0.08), rgba(17, 17, 17, 0.05)),
-    repeating-linear-gradient(-45deg,
-      transparent,
-      transparent 8px,
-      rgba(17, 17, 17, 0.04) 8px,
-      rgba(17, 17, 17, 0.04) 16px);
+.update-card-placeholder .ascii {
+  color: rgba(17, 17, 17, 0.8);
+  transition: color 350ms ease;
 }
 
-.update-card-placeholder span {
-  color: rgba(232, 228, 240, 0.22);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.update-card:hover .update-card-placeholder .ascii,
+.update-card:focus-visible .update-card-placeholder .ascii {
+  color: rgba(17, 17, 17, 0.92);
 }
 
-.update-card h3 {
+.update-card-title {
+  display: block;
   margin: 0 0 8px;
   color: var(--accent-charcoal);
   font-size: 0.95rem;
@@ -668,11 +627,12 @@ button {
   transition: color 260ms ease;
 }
 
-.update-card:hover h3 {
+.update-card:hover .update-card-title {
   color: var(--accent-light);
 }
 
-.update-card p {
+.update-card-desc {
+  display: block;
   margin: 0;
   color: rgba(17, 17, 17, 0.58);
   font-size: 0.85rem;
@@ -876,12 +836,59 @@ button {
   height: 16px;
 }
 
+.footer-email {
+  color: rgba(17, 17, 17, 0.62);
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: color 200ms ease;
+}
+
+.footer-email:hover {
+  color: var(--accent-charcoal);
+}
+
 .footer-copy {
   margin: 0;
   color: rgba(17, 17, 17, 0.45);
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.02em;
+}
+
+/* ── ASCII art ── */
+
+.ascii {
+  --focus-x: 50%;
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  container-type: size;
+  color: rgba(17, 17, 17, 0.55);
+  pointer-events: none;
+  user-select: none;
+}
+
+.ascii-text {
+  position: absolute;
+  top: 50%;
+  left: var(--focus-x);
+  display: block;
+  margin: 0;
+  font-family: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-weight: 400;
+  /* monospace glyphs are 0.6em wide; size the text so the whole piece fits the box */
+  font-size: min(calc(92cqw / (var(--cols) * 0.6)), calc(88cqh / (var(--rows) * 1.15)));
+  line-height: 1.15;
+  letter-spacing: 0;
+  white-space: pre;
+  text-align: left;
+  transform: translate(calc(-1 * var(--focus-x)), -50%);
+}
+
+/* fill the box and crop the overflow, like object-fit: cover */
+.ascii--cover .ascii-text {
+  font-size: max(calc(100cqw / (var(--cols) * 0.6)), calc(100cqh / (var(--rows) * 1.15)));
 }
 
 /* ── Responsive ── */
@@ -908,41 +915,41 @@ button {
   .site-footer {
     flex-direction: column;
     gap: 12px;
-    padding: 20px 24px 80px;
+    padding: 24px;
   }
 }
 
 @media (max-width: 760px) {
   .site-nav {
-    bottom: 20px;
+    --nav-gap: 20px;
     gap: 14px;
     width: calc(100vw - 32px);
     padding: 4px 16px;
   }
 
   .landing {
-    padding-bottom: clamp(110px, 18vh, 140px);
+    padding: clamp(32px, 6vh, 56px) 16px clamp(110px, 18vh, 140px);
   }
 
   .image-frame {
-    width: min(92vw, 680px);
+    width: min(100%, 680px);
     aspect-ratio: 4 / 5;
   }
 
-  .hero-image,
-  .hero-placeholder {
-    object-position: 52% center;
+  /* portrait frame: crop the landscape toward the lookout tower */
+  .hero-placeholder .ascii {
+    --focus-x: 92%;
+  }
+
+  .hero-title {
+    padding-top: 12%;
   }
 
   .hero-title span,
   .hero-title strong {
-    font-size: clamp(2.35rem, 11vw, 4.4rem);
+    font-size: clamp(2rem, 9.5vw, 4.4rem);
   }
 
-  .coming-soon {
-    bottom: clamp(90px, 16vh, 120px);
-    left: 24px;
-  }
 
   .cursor-glow {
     display: none;
@@ -972,11 +979,13 @@ button {
   }
 
   .hero-title,
-  .site-nav,
   .about-card,
   .story-box,
-  .update-card,
-  .cursor-glow {
+  .update-card {
     transform: none !important;
+  }
+
+  .cursor-glow {
+    display: none;
   }
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Space_Grotesk } from "next/font/google";
+import { Cormorant_Garamond, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -15,10 +16,16 @@ const cormorant = Cormorant_Garamond({
   style: ["italic", "normal"],
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export const metadata: Metadata = {
   title: "Stillhollow Studio",
   description:
-    "A cinematic narrative game studio crafting painterly adventure worlds.",
+    "Stillhollow Studio is an independent game studio crafting cinematic, narrative-driven adventure worlds.",
 };
 
 export default function RootLayout({
@@ -27,7 +34,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${cormorant.variable} h-full antialiased`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${cormorant.variable} ${jetbrainsMono.variable} h-full antialiased`}>
       <body>{children}</body>
     </html>
   );

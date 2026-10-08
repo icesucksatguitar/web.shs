@@ -3,20 +3,41 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { campfireArt, heroArt, lakeArt, lookoutArt, radioArt } from "./ascii-art";
 
-const navItems = ["Home", "About", "Contact", "Updates"];
+const navItems = ["Home", "About", "Updates", "Contact"];
+
+const studioEmail = "helios@stillhollow.me";
 
 const aboutCopy =
-  "Still Hollow Studios crafts cinematic narrative worlds where painterly landscapes meet immersive storytelling. We build adventure experiences rooted in atmosphere, mystery, and the quiet tension between beauty and decay.";
+  "Stillhollow Studio crafts cinematic narrative worlds where painterly landscapes meet immersive storytelling. We build adventure experiences rooted in atmosphere, mystery, and the quiet tension between beauty and decay.";
 
 const flightCopy =
   'Amidst the solemn silence, the only sound that punctuated the room was the persistent beeping of the radars, a monotonous reminder of the urgency of the situation. A lone air traffic control officer\'s voice crackled through the radio, desperately attempting to establish contact with "Trainee Flight 914". Their voice trembled with a mix of worry and apprehension, each call met with a haunting silence.';
 
 const updateCards = [
-  { id: "project", title: "Project Reveal", desc: "First look at our debut title — coming soon." },
-  { id: "devlog", title: "Dev Log", desc: "Behind-the-scenes notes from the studio." },
-  { id: "community", title: "Community", desc: "Join us as we build something extraordinary." },
+  {
+    id: "project",
+    title: "Project Reveal",
+    desc: "A first look at our debut title.",
+    art: lakeArt,
+    artLabel: "ASCII art of a sunset over mountains, reflected in a lake",
+  },
+  {
+    id: "devlog",
+    title: "Dev Log",
+    desc: "Behind-the-scenes notes from the studio.",
+    art: radioArt,
+    artLabel: "ASCII art of a two-way radio",
+  },
+  {
+    id: "community",
+    title: "Community",
+    desc: "Join us as we build something extraordinary.",
+    art: campfireArt,
+    artLabel: "ASCII art of two people at a campfire between pine trees",
+  },
 ] as const;
 
 const teamMembers = [
@@ -24,19 +45,19 @@ const teamMembers = [
     name: "Pyxis",
     role: "Creative Director & Narrative Design",
     instagram: "https://instagram.com/",
-    email: "mailto:stillhollowstudios@gmail.com",
+    email: `mailto:${studioEmail}`,
   },
   {
     name: "Proxima",
     role: "Lead Developer & Systems Architect",
     instagram: "https://instagram.com/",
-    email: "mailto:stillhollowstudios@gmail.com",
+    email: `mailto:${studioEmail}`,
   },
   {
     name: "Pleiades",
     role: "Art Direction & Visual Worldbuilding",
     instagram: "https://instagram.com/",
-    email: "mailto:stillhollowstudios@gmail.com",
+    email: `mailto:${studioEmail}`,
   },
 ];
 
@@ -49,6 +70,27 @@ const socialLinks = [
 ];
 
 type ModalType = "devlog" | "project" | null;
+
+/* Renders a block of ASCII art scaled to its (positioned) parent.
+   `cover` fills and crops like object-fit: cover; `contain` keeps the whole piece visible. */
+function AsciiArt({ art, label, fit = "cover" }: { art: string; label?: string; fit?: "contain" | "cover" }) {
+  const text = art.replace(/^\n/, "");
+  const lines = text.split("\n");
+  const style = {
+    "--cols": Math.max(...lines.map((line) => line.length)),
+    "--rows": lines.length,
+  } as CSSProperties;
+
+  return (
+    <span
+      className={`ascii ascii--${fit}`}
+      style={style}
+      {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
+    >
+      <span className="ascii-text">{text}</span>
+    </span>
+  );
+}
 
 function InstagramIcon() {
   return (
@@ -118,6 +160,7 @@ export default function Home() {
   const cursorPos = useRef({ x: 0, y: 0 });
   const cursorTarget = useRef({ x: 0, y: 0 });
   const rafRef = useRef<number>(0);
+  const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setLoaded(true), 4000);
@@ -125,7 +168,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // The glow only makes sense with a mouse; skip the animation loop on touch devices.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
     const onMove = (e: MouseEvent) => {
+      if (cursorRef.current) cursorRef.current.style.opacity = "1";
       cursorTarget.current = { x: e.clientX, y: e.clientY };
     };
 
@@ -149,17 +196,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (modal) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (!modal) return;
+
+    // Lenis drives the page scroll, so it has to be paused as well as the body.
+    document.body.style.overflow = "hidden";
+    lenisRef.current?.stop();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setModal(null);
+    };
+    window.addEventListener("keydown", onKey);
+
     return () => {
       document.body.style.overflow = "";
+      lenisRef.current?.start();
+      window.removeEventListener("keydown", onKey);
     };
   }, [modal]);
 
-  /* ── Navbar: simple scroll-based class toggle ── */
+  /* ── Navbar: sits at the bottom on the hero, slides to the top once scrolled ── */
   useEffect(() => {
     const onScroll = () => {
       setNavTop(window.scrollY > 300);
@@ -174,10 +229,11 @@ export default function Home() {
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({
-      duration: 1.1,
       lerp: 0.14,
       smoothWheel: true,
+      anchors: true,
     });
+    lenisRef.current = lenis;
 
     lenis.on("scroll", ScrollTrigger.update);
 
@@ -263,6 +319,7 @@ export default function Home() {
       ctx.revert();
       gsap.ticker.remove(ticker);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
@@ -276,7 +333,6 @@ export default function Home() {
   }, []);
 
   const closeModal = useCallback(() => setModal(null), []);
-  const footerCopy = `© ${new Date().getFullYear()} Still Hollow Studio™. All rights reserved.`;
 
   return (
     <>
@@ -300,26 +356,24 @@ export default function Home() {
         <div className="bg-glow bg-glow--1" aria-hidden="true" />
         <div className="bg-glow bg-glow--2" aria-hidden="true" />
 
-        <section className="landing" id="home" aria-label="Still Hollow Studios opening">
+        <section className="landing" id="home" aria-label="Stillhollow Studio opening">
           <div className="image-frame">
-            <div className="hero-placeholder" aria-hidden="true">
-              <span>Hero Image</span>
+            <div className="hero-placeholder">
+              <AsciiArt art={heroArt} />
             </div>
             <div className="image-grade" />
             <h1 className="hero-title">
-              <span>Still Hollow</span>
-              <strong>Studios</strong>
+              <span>Stillhollow</span>
+              <strong>Studio</strong>
             </h1>
           </div>
-
-          <p className="coming-soon">Coming Soon</p>
         </section>
 
-        <section className="about" id="about" aria-label="About Still Hollow Studios">
+        <section className="about" id="about" aria-label="About Stillhollow Studio">
           <div className="about-card">
             <div className="about-image-wrap">
-              <div className="about-image-placeholder" aria-hidden="true">
-                <span>Studio Art</span>
+              <div className="about-image-placeholder">
+                <AsciiArt art={lookoutArt} label="ASCII art of a fire lookout tower among pine trees under a crescent moon" />
               </div>
             </div>
             <div className="about-content">
@@ -360,11 +414,11 @@ export default function Home() {
                   className="update-card"
                   onClick={() => handleCardClick(card.id)}
                 >
-                  <div className="update-card-placeholder" aria-hidden="true">
-                    <span>Image</span>
-                  </div>
-                  <h3>{card.title}</h3>
-                  <p>{card.desc}</p>
+                  <span className="update-card-placeholder">
+                    <AsciiArt art={card.art} label={card.artLabel} />
+                  </span>
+                  <span className="update-card-title">{card.title}</span>
+                  <span className="update-card-desc">{card.desc}</span>
                 </button>
               ))}
             </div>
@@ -375,7 +429,7 @@ export default function Home() {
           <div className="soft-reveal">
             <p className="section-label">Contact</p>
             <h2>Get in Touch</h2>
-            <a href="mailto:stillhollowstudios@gmail.com">stillhollowstudios@gmail.com</a>
+            <a href={`mailto:${studioEmail}`}>{studioEmail}</a>
           </div>
         </section>
 
@@ -393,7 +447,10 @@ export default function Home() {
               </a>
             ))}
           </div>
-          <p className="footer-copy">{footerCopy}</p>
+          <a className="footer-email" href={`mailto:${studioEmail}`}>
+            {studioEmail}
+          </a>
+          <p className="footer-copy">&copy; 2025 Stillhollow Studio. All rights reserved.</p>
         </footer>
       </main>
 
@@ -401,6 +458,7 @@ export default function Home() {
         <div className="modal-overlay" onClick={closeModal} role="presentation">
           <div
             className="modal"
+            data-lenis-prevent
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
@@ -413,7 +471,7 @@ export default function Home() {
             {modal === "project" && (
               <>
                 <p className="section-label">Project Reveal</p>
-                <h2 id="modal-title">Coming Soon</h2>
+                <h2 id="modal-title">In Development</h2>
                 <p className="modal-desc">
                   Our debut title is currently in development. Stay tuned for the first official
                   reveal — a cinematic narrative experience unlike anything we&apos;ve shared before.
@@ -426,7 +484,7 @@ export default function Home() {
                 <p className="section-label">Dev Log</p>
                 <h2 id="modal-title">The Team</h2>
                 <p className="modal-desc">
-                  Still Hollow Studio is built by a small, dedicated team of creators.
+                  Stillhollow Studio is built by a small, dedicated team of creators.
                 </p>
                 <div className="team-grid">
                   {teamMembers.map((member) => (
